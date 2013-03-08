@@ -1,0 +1,15 @@
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: unclaimedproperty_development
+  pool: 5
+  username: unclaimedproperty
+  password:
+
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: unclaimedproperty_test
+  pool: 5
+  username: unclaimedproperty
+  password:
