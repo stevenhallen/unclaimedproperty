@@ -37,9 +37,9 @@ class Property < ActiveRecord::Base
       Timeout::timeout(10) do
         doc = Nokogiri::HTML(open(detail_url))
 
-        unless doc.content.include? 'NO MATCH'
-          table = doc.css('#Property_Details_Main_Page_Content_Formatting_Table').first
+        table = doc.css('#Property_Details_Main_Page_Content_Formatting_Table').first
 
+        if table.present?
           self.raw_table = table.to_html
           self.save!
         end
