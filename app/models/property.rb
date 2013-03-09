@@ -1,6 +1,8 @@
 require 'open-uri'
 
 class Property < ActiveRecord::Base
+  scope :need_to_download, where(:downloaded_at => nil)
+
   def self.random_id_number
     "%09d" % rand(1..999999999)
   end
