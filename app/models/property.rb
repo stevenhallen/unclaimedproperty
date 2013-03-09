@@ -1,12 +1,16 @@
 require 'open-uri'
 
 class Property < ActiveRecord::Base
-  def self.need_to_download
+  def self.not_downloaded
     where(:downloaded_at => nil)
   end
 
   def self.downloaded
     where('downloaded_at is not null')
+  end
+
+  def self.not_found
+    downloaded.where('raw_table is null')
   end
 
   def self.found
@@ -41,24 +45,48 @@ class Property < ActiveRecord::Base
     @table ||= Nokogiri::HTML(raw_table)
   end
 
-  def owners_names
-    table.css('#OwnersNameData').first.content.strip.split(';').map { |name| name.strip }.join('; ')
+  def table_element_by_id(id)
+    table.css(id).first
+  end
+
+  def table_element_by_id_content(id)
+    table_element_by_id(id).content.strip
+  end
+
+  def table_element_by_id_children_content(id)
+    table_element_by_id.children.collect do |element|
+      element.content.strip
+    end.select(&:present?)
+  end
+
+  def owners
+    table_element_by_id_content('#OwnersNameData').split(';').collect do |name|
+      name.strip
+    end
+  end
+
+  def owner_names
+    owners.join('; ')
+  end
+
+  def reported_owner_address_lines
+    table_element_by_id_children_content('#ReportedAddressData')
   end
 
   def reported_owner_address
-    table.css('#ReportedAddressData').first.children.collect { |el| el.content.strip }.select(&:present?).join("\n")
+    reported_owner_address_lines.join("\n")
   end
 
   def property_type
-    table.css('#PropertyTypeData').first.content.strip
+    table_element_by_id_content('#PropertyTypeData')
   end
 
   def cash_report
-    table.css('#ctl00_ContentPlaceHolder1_CashReportData').first.content.strip
+    table_element_by_id_content('#ctl00_ContentPlaceHolder1_CashReportData')
   end
 
   def reported_by
-    table.css('#ReportedByData').first.content.strip
+    table_element_by_id_content('#ReportedByData')
   end
 
   def download
