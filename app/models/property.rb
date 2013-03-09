@@ -1,7 +1,17 @@
 require 'open-uri'
 
 class Property < ActiveRecord::Base
-  scope :need_to_download, where(:downloaded_at => nil)
+  def self.need_to_download
+    where(:downloaded_at => nil)
+  end
+
+  def self.downloaded
+    where('downloaded_at is not null')
+  end
+
+  def self.found
+    downloaded.where('raw_table is not null')
+  end
 
   def self.random_id_number
     "%09d" % rand(1..999999999)
@@ -25,6 +35,30 @@ class Property < ActiveRecord::Base
 
   def detail_url
     "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property_id_number}"
+  end
+
+  def table
+    @table ||= Nokogiri::HTML(raw_table)
+  end
+
+  def owners_names
+    table.css('#OwnersNameData').first.content.strip.split(';').map { |name| name.strip }.join('; ')
+  end
+
+  def reported_owner_address
+    table.css('#ReportedAddressData').first.children.collect { |el| el.content.strip }.select(&:present?).join("\n")
+  end
+
+  def property_type
+    table.css('#PropertyTypeData').first.content.strip
+  end
+
+  def cash_report
+    table.css('#ctl00_ContentPlaceHolder1_CashReportData').first.content.strip
+  end
+
+  def reported_by
+    table.css('#ReportedByData').first.content.strip
   end
 
   def download
