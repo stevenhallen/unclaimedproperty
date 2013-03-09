@@ -54,7 +54,7 @@ class Property < ActiveRecord::Base
   end
 
   def table_element_by_id_children_content(id)
-    table_element_by_id.children.collect do |element|
+    table_element_by_id(id).children.collect do |element|
       element.content.strip
     end.select(&:present?)
   end
