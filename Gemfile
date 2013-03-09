@@ -6,6 +6,7 @@ gem 'rails', '4.0.0.beta1'
 
 gem 'pg'
 gem 'haml-rails'
+gem 'tilt', '1.3.4'
 
 group :assets do
   gem 'sass-rails',   '~> 4.0.0.beta1'
