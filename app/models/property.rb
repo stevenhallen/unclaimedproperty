@@ -1,4 +1,5 @@
 require 'open-uri'
+require 'csv'
 
 class Property < ActiveRecord::Base
   def self.not_downloaded
@@ -95,6 +96,21 @@ class Property < ActiveRecord::Base
 
   def reported_by
     table_element_by_id_content('#ReportedByData')
+  end
+
+  def self.csv_column_names
+    %w(property_id_number owner_names reported_owner_address property_type cash_report reported_by detail_url)
+  end
+
+  def self.to_csv
+    CSV.generate do |csv|
+      csv << csv_column_names
+      found.find_in_batches(:batch_size => 1000) do |batches|
+        batches.each do |property|
+          csv << csv_column_names.collect { |name| property.send(name.to_sym) }
+        end
+      end
+    end
   end
 
   def download
