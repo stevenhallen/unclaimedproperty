@@ -33,6 +33,16 @@ class Property < ActiveRecord::Base
     Property.new(:id_number => next_id_number)
   end
 
+  def self.add_records(number)
+    number.times do
+      Property.next_record.save
+    end
+
+    Property.not_downloaded.each do |property|
+      property.download
+    end
+  end
+
   def property_id_number
     "%09d" % id_number
   end
