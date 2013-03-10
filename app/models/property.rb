@@ -33,7 +33,7 @@ class Property < ActiveRecord::Base
     Property.new(:id_number => next_id_number)
   end
 
-  def self.add_records(number)
+  def self.add_records(number=1000)
     number.times do
       Property.next_record.save
     end
