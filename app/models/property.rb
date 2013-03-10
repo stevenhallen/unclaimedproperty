@@ -35,11 +35,9 @@ class Property < ActiveRecord::Base
 
   def self.add_records(number=1000)
     number.times do
-      Property.next_record.save
-    end
-
-    Property.not_downloaded.each do |property|
-      property.download
+      property = Property.next_record
+      property.save
+      property.delay.download
     end
   end
 
