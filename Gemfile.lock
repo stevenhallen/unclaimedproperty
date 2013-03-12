@@ -83,6 +83,9 @@ GEM
       railties (>= 3.1, < 4.1)
     hike (1.2.1)
     hirb (0.7.1)
+    httparty (0.10.2)
+      multi_json (~> 1.0)
+      multi_xml (>= 0.5.2)
     i18n (0.6.4)
     jazz_hands (0.5.0)
       awesome_print (~> 1.1.0)
@@ -114,6 +117,7 @@ GEM
     mocha (0.10.5)
       metaclass (~> 0.0.1)
     multi_json (1.6.1)
+    multi_xml (0.5.3)
     nokogiri (1.5.6)
     pg (0.14.1)
     polyglot (0.3.3)
@@ -220,6 +224,7 @@ DEPENDENCIES
   delayed_job_active_record (~> 4.0.0.beta1)
   factory_girl_rails
   haml-rails
+  httparty
   jazz_hands
   jbuilder (~> 1.0.1)
   jquery-rails

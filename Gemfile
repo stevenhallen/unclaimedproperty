@@ -6,6 +6,7 @@ gem 'rails', '4.0.0.beta1'
 
 gem 'delayed_job_active_record', '~> 4.0.0.beta1'
 gem 'haml-rails'
+gem 'httparty'
 gem 'jbuilder', '~> 1.0.1'
 gem 'jquery-rails'
 gem 'nokogiri'
