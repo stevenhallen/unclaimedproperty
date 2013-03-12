@@ -1,4 +1,3 @@
-require 'open-uri'
 require 'csv'
 
 class Property < ActiveRecord::Base
@@ -113,25 +112,51 @@ class Property < ActiveRecord::Base
     end
   end
 
+  def self.response_for_url(url, options = {})
+    timeout = options.fetch(:timeout, 15)
+
+    response = nil
+
+    begin
+      Timeout::timeout(timeout) do
+        Rails.logger.info("Fetching #{url}")
+
+        response = HTTParty.get(url)
+      end
+    rescue Timeout::Error
+      Rails.logger.warn("Timed out getting #{url}")
+    end
+
+    response
+  end
+
   def download
     Rails.logger.info("Trying to find property ID number #{property_id_number}")
 
     self.downloaded_at = Time.now
     self.save!
 
-    begin
-      Timeout::timeout(10) do
-        doc = Nokogiri::HTML(open(detail_url))
+    response = Property.response_for_url(detail_url)
 
-        table = doc.css('#Property_Details_Main_Page_Content_Formatting_Table').first
+    if response.nil?
+      Rails.logger.warn("No response found for property ID number #{property_id_number}")
+      return
+    end
 
-        if table.present?
-          self.raw_table = table.to_html
-          self.save!
-        end
-      end
-    rescue Timeout::Error
-      Rails.logger.warn("Timed out trying to find property ID number #{property_id_number}")
+    if response.include?('NO MATCH')
+      Rails.logger.warn("No match found for property ID number #{property_id_number}")
+      return
+    end
+
+    doc = Nokogiri::HTML(response)
+
+    table = doc.css('#Property_Details_Main_Page_Content_Formatting_Table').first
+
+    if table.present?
+      self.raw_table = table.to_html
+      self.save!
+    else
+      Rails.logger.warn("No details table found for #{property_id_number}")
     end
   end
 end
