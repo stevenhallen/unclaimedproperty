@@ -4,6 +4,7 @@ ruby '2.0.0'
 
 gem 'rails', '4.0.0.beta1'
 
+gem 'daemons'
 gem 'delayed_job_active_record', '~> 4.0.0.beta1'
 gem 'haml-rails'
 gem 'httparty'

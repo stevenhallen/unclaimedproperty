@@ -46,6 +46,7 @@ GEM
     coffee-script-source (1.6.1)
     columnize (0.3.6)
     coolline (0.4.0)
+    daemons (1.1.9)
     database_cleaner (0.9.1)
     debug_inspector (0.0.2)
     debugger (1.4.0)
@@ -220,6 +221,7 @@ PLATFORMS
 DEPENDENCIES
   better_errors
   coffee-rails (~> 4.0.0.beta1)
+  daemons
   database_cleaner
   delayed_job_active_record (~> 4.0.0.beta1)
   factory_girl_rails
