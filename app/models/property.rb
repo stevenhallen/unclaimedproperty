@@ -130,6 +130,28 @@ class Property < ActiveRecord::Base
     response
   end
 
+  def self.random_walk(lower, upper, sample)
+    counts = {}
+    lower.upto(upper).each do |million|
+      a = million * 1000000
+      b = (million + 1) * 1000000
+
+      found = sample.times.collect { notice_found_by_property_record_id?(rand(a..b)) }.select { |x| x }.count
+
+      counts[a] = found
+    end
+
+    counts
+  end
+
+  def self.notice_found_by_property_record_id?(id)
+    url = "http://scoweb.sco.ca.gov/UCP/NoticeDetails.aspx?propertyRecID=#{id}"
+
+    response = response_for_url(url)
+
+    response.present? && !response.include?('NO MATCH') && response.include?('Notice_Details_Main_Page_Content_Formatting_Table')
+  end
+
   def download
     Rails.logger.info("Trying to find property ID number #{property_id_number}")
 
