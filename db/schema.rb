@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130313034403) do
+ActiveRecord::Schema.define(version: 20130313133457) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,6 +40,8 @@ ActiveRecord::Schema.define(version: 20130313034403) do
     t.datetime "updated_at"
     t.text     "notice_table_html"
     t.integer  "rec_id"
+    t.decimal  "cash_report",         precision: 12, scale: 2
+    t.date     "reported_on"
   end
 
   add_index "properties", ["id_number"], name: "index_properties_on_id_number", unique: true
