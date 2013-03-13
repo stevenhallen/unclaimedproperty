@@ -190,7 +190,23 @@ class Property < ActiveRecord::Base
     response
   end
 
-  def self.random_walk(lower, upper, sample)
+  def self.download_random_by_rec_id(number=1000)
+    number.times do
+      rec_id = random_rec_id
+
+      property = Property.where(:rec_id => rec_id).first
+      if property.nil?
+        property = Property.new(:rec_id => random_rec_id)
+        property.save
+      end
+
+      next if property.notice_table_html.present? && property.property_table.present?
+
+      property.delay.download
+    end
+  end
+
+  def self.random_walk_by_rec_id(lower, upper, sample)
     counts = {}
     lower.upto(upper).each do |million|
       a = million * 1000000
