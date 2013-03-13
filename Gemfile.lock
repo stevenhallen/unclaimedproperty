@@ -36,6 +36,7 @@ GEM
     bourne (1.1.2)
       mocha (= 0.10.5)
     builder (3.1.4)
+    chronic (0.9.1)
     coderay (1.0.9)
     coffee-rails (4.0.0.beta1)
       coffee-script (>= 2.2.0)
@@ -220,6 +221,7 @@ PLATFORMS
 
 DEPENDENCIES
   better_errors
+  chronic
   coffee-rails (~> 4.0.0.beta1)
   daemons
   database_cleaner
