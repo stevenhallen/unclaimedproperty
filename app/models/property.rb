@@ -37,6 +37,10 @@ class Property < ActiveRecord::Base
     notice_found.property_found
   end
 
+  def self.not_found
+    notice_not_found.property_not_found
+  end
+
   def self.random_id_number
     "%09d" % rand(1..999999999)
   end
