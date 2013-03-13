@@ -110,7 +110,8 @@ class Property < ActiveRecord::Base
   end
 
   def element_by_id_content(table, id)
-    element_by_id(table, id).content.strip
+    element = element_by_id(table, id)
+    element.content.strip if element.present?
   end
 
   def element_by_id_children_content(table, id)
@@ -139,6 +140,10 @@ class Property < ActiveRecord::Base
 
   def property_type
     element_by_id_content(property_table, '#PropertyTypeData')
+  end
+
+  def property_reported
+    element_by_id_content(property_table, '#ctl00_ContentPlaceHolder1_PropertyReportData')
   end
 
   def cash_report
