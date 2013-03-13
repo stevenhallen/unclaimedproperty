@@ -1,0 +1,12 @@
+Found:
+  Notice and Property: 14564
+  Notice without Property: 1928
+  Property without Notice: 56
+  Not found: 1020
+Cash reported:
+  Max: $995.00
+  Avg: $79.29
+  No value: 1456
+Reported on:
+  Earliest: 1942-11-16
+  Latest: 2013-02-27
