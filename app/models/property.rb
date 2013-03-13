@@ -1,6 +1,14 @@
 require 'csv'
 
 class Property < ActiveRecord::Base
+  def self.with_id_number
+    where('id_number is not null')
+  end
+
+  def self.with_rec_id
+    where('rec_id is not null')
+  end
+
   def self.not_downloaded
     where(:downloaded_at => nil)
   end
@@ -9,12 +17,20 @@ class Property < ActiveRecord::Base
     where('downloaded_at is not null')
   end
 
-  def self.not_found
-    downloaded.where('raw_table is null')
+  def self.property_not_found
+    downloaded.where(:property_table_html => nil)
   end
 
-  def self.found
-    downloaded.where('raw_table is not null')
+  def self.property_found
+    downloaded.where('property_table_html is not null')
+  end
+
+  def self.notice_not_found
+    downloaded.where(:notice_table_html => nil)
+  end
+
+  def self.notice_found
+    downloaded.where('notice_table_html is not null')
   end
 
   def self.random_id_number
@@ -22,20 +38,32 @@ class Property < ActiveRecord::Base
   end
 
   def self.last_id_number
-    order('id_number DESC').limit(1).pluck(:id_number).last
+    with_id_number.order('id_number DESC').limit(1).pluck(:id_number).last
+  end
+
+  def self.last_rec_id
+    with_rec_id.order('rec_id DESC').limit(1).pluck(:rec_id).last
   end
 
   def self.next_id_number
     (last_id_number || 0) + 1
   end
 
-  def self.next_record
+  def self.next_rec_id
+    (last_rec_id || 0) + 1
+  end
+
+  def self.next_record_by_id_number
     Property.new(:id_number => next_id_number)
   end
 
-  def self.add_records(number=1000)
+  def self.next_record_by_rec_id
+    Property.new(:rec_id => next_rec_id)
+  end
+
+  def self.add_records(number=1000, by='rec_id')
     number.times do
-      property = Property.next_record
+      property = Property.send("next_record_by_#{by}")
       property.save
       property.delay.download
     end
@@ -45,30 +73,46 @@ class Property < ActiveRecord::Base
     "%09d" % id_number
   end
 
-  def detail_url
+  def notice_url_by_id_number
+    "http://scoweb.sco.ca.gov/UCP/NoticeDetails.aspx?propertyID=#{property_id_number}"
+  end
+
+  def notice_url_by_rec_id
+    "http://scoweb.sco.ca.gov/UCP/NoticeDetails.aspx?propertyRecID=#{rec_id}"
+  end
+
+  def property_url_by_id_number
     "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property_id_number}"
   end
 
-  def table
-    @table ||= Nokogiri::HTML(raw_table)
+  def property_url_by_rec_id
+    "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyRecID=#{rec_id}"
   end
 
-  def table_element_by_id(id)
+  def property_table
+    @property_table ||= Nokogiri::HTML(property_table_html)
+  end
+
+  def notice_table
+    @notice_table ||= Nokogiri::HTML(notice_table_html)
+  end
+
+  def element_by_id(table, id)
     table.css(id).first
   end
 
-  def table_element_by_id_content(id)
-    table_element_by_id(id).content.strip
+  def element_by_id_content(table, id)
+    element_by_id(table, id).content.strip
   end
 
-  def table_element_by_id_children_content(id)
-    table_element_by_id(id).children.collect do |element|
+  def element_by_id_children_content(table, id)
+    element_by_id(table, id).children.collect do |element|
       element.content.strip
     end.select(&:present?)
   end
 
   def owners
-    table_element_by_id_content('#OwnersNameData').split(';').collect do |name|
+    element_by_id_content(property_table, '#OwnersNameData').split(';').collect do |name|
       name.strip
     end
   end
@@ -78,7 +122,7 @@ class Property < ActiveRecord::Base
   end
 
   def reported_owner_address_lines
-    table_element_by_id_children_content('#ReportedAddressData')
+    element_by_id_children_content(property_table, '#ReportedAddressData')
   end
 
   def reported_owner_address
@@ -86,15 +130,23 @@ class Property < ActiveRecord::Base
   end
 
   def property_type
-    table_element_by_id_content('#PropertyTypeData')
+    element_by_id_content(property_table, '#PropertyTypeData')
   end
 
   def cash_report
-    table_element_by_id_content('#ctl00_ContentPlaceHolder1_CashReportData')
+    element_by_id_content(property_table, '#ctl00_ContentPlaceHolder1_CashReportData')
   end
 
   def reported_by
-    table_element_by_id_content('#ReportedByData')
+    element_by_id_content(property_table, '#ReportedByData')
+  end
+
+  def last_contacted_on
+    Chronic.parse(element_by_id_content(notice_table, '#DateOfLastContactData')).to_date
+  end
+
+  def reported_on
+    Chronic.parse(element_by_id_content(notice_table, '#DateReportedData')).to_date
   end
 
   def self.csv_column_names
@@ -136,7 +188,7 @@ class Property < ActiveRecord::Base
       a = million * 1000000
       b = (million + 1) * 1000000
 
-      found = sample.times.collect { notice_found_by_property_record_id?(rand(a..b)) }.select { |x| x }.count
+      found = sample.times.collect { notice_found_by_rec_id?(rand(a..b)) }.select { |x| x }.count
 
       counts[a] = found
     end
@@ -144,41 +196,55 @@ class Property < ActiveRecord::Base
     counts
   end
 
-  def self.notice_found_by_property_record_id?(id)
-    url = "http://scoweb.sco.ca.gov/UCP/NoticeDetails.aspx?propertyRecID=#{id}"
+  def self.notice_found_by_rec_id?(rec_id)
+    url = "http://scoweb.sco.ca.gov/UCP/NoticeDetails.aspx?propertyRecID=#{rec_id}"
 
     response = response_for_url(url)
 
     response.present? && !response.include?('NO MATCH') && response.include?('Notice_Details_Main_Page_Content_Formatting_Table')
   end
 
-  def download
-    Rails.logger.info("Trying to find property ID number #{property_id_number}")
-
-    self.downloaded_at = Time.now
-    self.save!
-
-    response = Property.response_for_url(detail_url)
+  def self.get_table(url, table_selector)
+    response = Property.response_for_url(url)
 
     if response.nil?
-      Rails.logger.warn("No response found for property ID number #{property_id_number}")
+      Rails.logger.warn("No response found for #{url}")
       return
     end
 
     if response.include?('NO MATCH')
-      Rails.logger.warn("No match found for property ID number #{property_id_number}")
+      Rails.logger.warn("No match found for #{url}")
       return
     end
 
     doc = Nokogiri::HTML(response)
 
-    table = doc.css('#Property_Details_Main_Page_Content_Formatting_Table').first
+    doc.css(table_selector).first
+  end
 
-    if table.present?
-      self.raw_table = table.to_html
-      self.save!
-    else
-      Rails.logger.warn("No details table found for #{property_id_number}")
+  def download
+    Rails.logger.info("Trying to find propertyRecID #{rec_id}")
+
+    self.downloaded_at = Time.now
+    self.save!
+
+    [
+      {
+        :url => notice_url_by_rec_id,
+        :selector => '#Notice_Details_Main_Page_Content_Formatting_Table',
+        :setter => :notice_table_html=
+      },
+      {
+        :url => property_url_by_rec_id,
+        :selector => '#Property_Details_Main_Page_Content_Formatting_Table',
+        :setter => :property_table_html=
+      }
+    ].each do |data|
+      table = Property.get_table(data[:url], data[:selector])
+      if table.present?
+        self.send(data[:setter], table.to_html)
+        self.save
+      end
     end
   end
 end
