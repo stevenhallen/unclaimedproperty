@@ -41,6 +41,10 @@ class Property < ActiveRecord::Base
     "%09d" % rand(1..999999999)
   end
 
+  def self.random_rec_id
+    rand(1..found.last_rec_id)
+  end
+
   def self.last_id_number
     with_id_number.order('id_number DESC').limit(1).pluck(:id_number).last
   end
