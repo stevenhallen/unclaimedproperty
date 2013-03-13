@@ -235,6 +235,27 @@ class Property < ActiveRecord::Base
     end
   end
 
+  def self.quick_report
+    File.open('report.txt', 'w') do |writer|
+      writer.write "Found:\n"
+      writer.write "  Notice and Property: #{Property.found.count}\n"
+      writer.write "  Notice without Property: #{Property.notice_found.property_not_found.count}\n"
+      writer.write "  Property without Notice: #{Property.property_found.notice_not_found.count}\n"
+      writer.write "  Not found: #{Property.not_found.count}\n"
+
+      without_cash = Property.found.where(:cash_report => BigDecimal(0)).count
+      writer.write "Cash reported:\n"
+      writer.write "  Max: #{Property.found.maximum(:cash_report)}\n"
+      writer.write "  Avg: #{Property.found.where('cash_report > ?', BigDecimal(0)).average(:cash_report)}\n"
+      writer.write "  No value: #{without_cash}\n"
+
+      dates = Property.found.where('reported_on > ?', 100.years.ago)
+      writer.write "Reported on:\n"
+      writer.write "  Earliest: #{dates.minimum(:reported_on)}\n"
+      writer.write "  Latest: #{dates.maximum(:reported_on)}\n"
+    end
+  end
+
   def self.download_random_by_rec_id(number=1000)
     number.times do
       rec_id = random_rec_id
