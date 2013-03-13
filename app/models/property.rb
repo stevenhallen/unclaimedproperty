@@ -150,13 +150,13 @@ class Property < ActiveRecord::Base
     element_by_id_content(property_table, '#ctl00_ContentPlaceHolder1_PropertyReportData')
   end
 
-  def cash_report
+  def cash_report_from_html
     element_by_id_content(property_table, '#ctl00_ContentPlaceHolder1_CashReportData')
   end
 
-  def cash_report_decimal
+  def cash_report_from_html_decimal
     begin
-      BigDecimal(cash_report.split("\n").first.sub('$', ''))
+      BigDecimal(cash_report_from_html.split("\n").first.sub('$', ''))
     rescue
       Rails.logger.error("Error finding cash report for #{id}")
       BigDecimal(0)
@@ -171,8 +171,13 @@ class Property < ActiveRecord::Base
     Chronic.parse(element_by_id_content(notice_table, '#DateOfLastContactData')).to_date
   end
 
-  def reported_on
-    Chronic.parse(element_by_id_content(notice_table, '#DateReportedData')).to_date
+  def reported_on_from_html
+    begin
+      Chronic.parse(element_by_id_content(notice_table, '#DateReportedData')).to_date
+    rescue
+      Rails.logger.error("Error finding reported on for #{id}")
+      nil
+    end
   end
 
   def self.csv_column_names
@@ -208,13 +213,35 @@ class Property < ActiveRecord::Base
     response
   end
 
+  def self.max_cash_report
+    Property.found.maximum(:cash_report)
+  end
+
+  def self.populate_fields
+    Property.found.where(:cash_report => nil).find_in_batches(:batch_size => 1000) do |batches|
+      batches.each do |property|
+        property.cash_report = property.cash_report_from_html_decimal
+        property.save
+      end
+    end
+
+    Property.found.where(:reported_on => nil).find_in_batches(:batch_size => 1000) do |batches|
+      batches.each do |property|
+        next unless property.reported_on_from_html.present?
+
+        property.reported_on = property.reported_on_from_html
+        property.save
+      end
+    end
+  end
+
   def self.download_random_by_rec_id(number=1000)
     number.times do
       rec_id = random_rec_id
 
       property = Property.where(:rec_id => rec_id).first
       if property.nil?
-        property = Property.new(:rec_id => random_rec_id)
+        property = Property.new(:rec_id => rec_id)
         property.save
       end
 
