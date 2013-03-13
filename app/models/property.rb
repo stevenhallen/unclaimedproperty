@@ -33,6 +33,10 @@ class Property < ActiveRecord::Base
     downloaded.where('notice_table_html is not null')
   end
 
+  def self.found
+    notice_found.property_found
+  end
+
   def self.random_id_number
     "%09d" % rand(1..999999999)
   end
