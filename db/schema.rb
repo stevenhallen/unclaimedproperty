@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130310021816) do
+ActiveRecord::Schema.define(version: 20130313034403) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -33,13 +33,16 @@ ActiveRecord::Schema.define(version: 20130310021816) do
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
   create_table "properties", force: true do |t|
-    t.integer  "id_number",     null: false
-    t.text     "raw_table"
+    t.integer  "id_number"
+    t.text     "property_table_html"
     t.datetime "downloaded_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "notice_table_html"
+    t.integer  "rec_id"
   end
 
   add_index "properties", ["id_number"], name: "index_properties_on_id_number", unique: true
+  add_index "properties", ["rec_id"], name: "index_properties_on_rec_id", unique: true
 
 end
