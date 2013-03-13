@@ -150,6 +150,15 @@ class Property < ActiveRecord::Base
     element_by_id_content(property_table, '#ctl00_ContentPlaceHolder1_CashReportData')
   end
 
+  def cash_report_decimal
+    begin
+      BigDecimal(cash_report.split("\n").first.sub('$', ''))
+    rescue
+      Rails.logger.error("Error finding cash report for #{id}")
+      BigDecimal(0)
+    end
+  end
+
   def reported_by
     element_by_id_content(property_table, '#ReportedByData')
   end
