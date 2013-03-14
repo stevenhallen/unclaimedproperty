@@ -169,7 +169,7 @@ class Property < ActiveRecord::Base
   end
 
   def cash_report_from_html
-    element_by_id_content(property_table, '#ctl00_ContentPlaceHolder1_CashReportData')
+    element_by_id_content(notice_table, '#AmountData')
   end
 
   def cash_report_from_html_decimal
