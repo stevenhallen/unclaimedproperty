@@ -202,6 +202,12 @@ class Property < ActiveRecord::Base
     %w(rec_id id_number owner_names reported_owner_address property_type cash_report reported_by reported_on property_url_by_id_number notice_url_by_rec_id)
   end
 
+  def self.write_csv(filename)
+    File.open(filename, 'w') do |writer|
+      writer.write(to_csv)
+    end
+  end
+
   def self.to_csv
     CSV.generate do |csv|
       csv << csv_column_names
