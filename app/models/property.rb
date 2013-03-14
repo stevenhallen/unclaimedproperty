@@ -211,7 +211,7 @@ class Property < ActiveRecord::Base
   def self.to_csv
     CSV.generate do |csv|
       csv << csv_column_names
-      found.find_in_batches(:batch_size => 1000) do |batches|
+      notice_found.find_in_batches(:batch_size => 1000) do |batches|
         batches.each do |property|
           csv << csv_column_names.collect { |name| property.send(name.to_sym) }
         end
@@ -242,14 +242,14 @@ class Property < ActiveRecord::Base
   end
 
   def self.populate_fields
-    Property.found.where(:cash_report => nil).find_in_batches(:batch_size => 1000) do |batches|
+    Property.notice_found.where(:cash_report => nil).find_in_batches(:batch_size => 1000) do |batches|
       batches.each do |property|
         property.cash_report = property.cash_report_from_html_decimal
         property.save
       end
     end
 
-    Property.found.where(:reported_on => nil).find_in_batches(:batch_size => 1000) do |batches|
+    Property.notice_found.where(:reported_on => nil).find_in_batches(:batch_size => 1000) do |batches|
       batches.each do |property|
         next unless property.reported_on_from_html.present?
 
