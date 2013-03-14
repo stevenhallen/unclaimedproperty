@@ -132,6 +132,15 @@ class Property < ActiveRecord::Base
   #
   # 2.  Calculate a digest for the fields that are expected to be immutable
   # 3.  Compare them
+  def id_number_from_html
+    element = element_by_id_content(property_table, '#tbl_HeaderInformation')
+    lines = element.split("\n")
+    lines = lines.collect(&:strip).select(&:present?)
+
+    header, header_index = lines.each_with_index.select { |item, index| item.starts_with? 'Property ID Number:' }.first
+
+    lines[header_index + 1].to_i
+  end
 
   def owners
     element_by_id_content(property_table, '#OwnersNameData').split(';').collect do |name|
@@ -190,7 +199,7 @@ class Property < ActiveRecord::Base
   end
 
   def self.csv_column_names
-    %w(property_id_number owner_names reported_owner_address property_type cash_report reported_by detail_url)
+    %w(rec_id id_number owner_names reported_owner_address property_type cash_report reported_by reported_on property_url_by_id_number notice_url_by_rec_id)
   end
 
   def self.to_csv
@@ -239,6 +248,15 @@ class Property < ActiveRecord::Base
         next unless property.reported_on_from_html.present?
 
         property.reported_on = property.reported_on_from_html
+        property.save
+      end
+    end
+
+    Property.property_found.where(:id_number => nil).find_in_batches(:batch_size => 1000) do |batches|
+      batches.each do |property|
+        next unless property.id_number_from_html.present?
+
+        property.id_number = property.id_number_from_html
         property.save
       end
     end
