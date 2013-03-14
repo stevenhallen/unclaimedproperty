@@ -124,6 +124,15 @@ class Property < ActiveRecord::Base
     end.select(&:present?)
   end
 
+  # TODO:
+  # 1.  Define two separate mappings:
+  #
+  #     a.  From the notice table (all records have a notice record)
+  #     b.  From the property table (only held records have a property record)
+  #
+  # 2.  Calculate a digest for the fields that are expected to be immutable
+  # 3.  Compare them
+
   def owners
     element_by_id_content(property_table, '#OwnersNameData').split(';').collect do |name|
       name.strip
