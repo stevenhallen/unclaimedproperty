@@ -289,6 +289,20 @@ class Property < ActiveRecord::Base
     end
   end
 
+  def self.download_by_range(id_number_start, id_number_end)
+    id_number_start.upto(id_number_end).each do |id_number|
+      property = Property.where(:id_number => id_number).first
+      if property.nil?
+        property = Property.new(:id_number => id_number)
+        property.save
+      end
+
+      next if property.notice_table_html.present? && property.property_table.present?
+
+      property.delay.download
+    end
+  end
+
   def self.download_random_by_rec_id(number=1000)
     number.times do
       rec_id = random_rec_id
