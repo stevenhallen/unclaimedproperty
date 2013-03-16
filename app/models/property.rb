@@ -286,6 +286,17 @@ class Property < ActiveRecord::Base
       writer.write "Reported on:\n"
       writer.write "  Earliest: #{dates.minimum(:reported_on)}\n"
       writer.write "  Latest: #{dates.maximum(:reported_on)}\n"
+
+      Property.where('id_number is not null').
+        select('id_number / 1000000 as range, count(*) as count').
+        group('id_number / 1000000').
+        order('range').each do |group|
+          found_count = Property.where('id_number / 1000000 = ? and property_table_html is not null', group.range).count
+
+          percentage = 100.0 * found_count / group.count
+
+          writer.write "#{group.range}: #{found_count} / #{group.count}: #{percentage}%\n"
+      end
     end
   end
 
@@ -319,6 +330,23 @@ class Property < ActiveRecord::Base
     end
   end
 
+  def self.random_walk_by_id_number(sample=10)
+    # for each 1M range
+    1.upto(999).each do |million|
+      lower = million * 1000000
+      upper = (million + 1) * 1000000
+
+      found = sample.times.select do
+        number = rand(lower..(upper - 1))
+        id_number = "%09d" % number
+
+        property = Property.where(:id_number => id_number).first || Property.new(:id_number => id_number)
+        property.save unless property.persisted?
+        property.delay.download unless property.property_table_html.present?
+      end
+    end
+  end
+
   def self.random_walk_by_rec_id(lower, upper, sample)
     counts = {}
     lower.upto(upper).each do |million|
@@ -331,6 +359,14 @@ class Property < ActiveRecord::Base
     end
 
     counts
+  end
+
+  def self.property_found_by_id_number?(id_number)
+    url = "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{id_number}"
+
+    response = response_for_url(url)
+
+    response.present? && !response.include?('NO MATCH') && response.include?('Property_Details_Main_Page_Content_Formatting_Table')
   end
 
   def self.notice_found_by_rec_id?(rec_id)
