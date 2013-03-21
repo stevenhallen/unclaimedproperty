@@ -93,10 +93,10 @@ class Property < ActiveRecord::Base
     max_found_id_number.zero? ? starting_id_number : max_found_id_number + 1
   end
 
-  def self.queue_download_for_next_batch
+  def self.queue_download_for_next_batch(number=50)
     return if count_of_records_not_found_after_max_found_id_number > 10
 
-    next_id_number.upto(next_id_number + 50).each do |id_number|
+    next_id_number.upto(next_id_number + number).each do |id_number|
       property = Property.where(:id_number => id_number).first || Property.new(:id_number => id_number)
 
       property.save unless property.persisted?
