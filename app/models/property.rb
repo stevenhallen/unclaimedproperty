@@ -72,28 +72,6 @@ class Property < ActiveRecord::Base
     Property.found.maximum(:cash_report)
   end
 
-  def self.populate_fields
-    %w(
-      cash_report
-      owner_address_lines
-      owner_names
-      property_reported
-      property_type
-      reported_by
-    ).each do |attribute|
-      setter = "#{attribute}=".to_sym
-      getter = "#{attribute}_from_html".to_sym
-      Property.found.where(attribute.to_sym => nil).find_in_batches(:batch_size => 1000) do |batches|
-        batches.each do |property|
-          value = property.send(getter)
-          next unless value.present?
-          property.send(setter, value)
-          property.save!
-        end
-      end
-    end
-  end
-
   def self.max_found_id_number
     with_id_number.property_found.maximum(:id_number) || 0
   end
@@ -224,6 +202,27 @@ class Property < ActiveRecord::Base
     element_by_id_content(property_table, '#ReportedByData')
   end
 
+  def populate_fields
+    %w(
+      cash_report
+      owner_address_lines
+      owner_names
+      property_reported
+      property_type
+      reported_by
+    ).each do |attribute|
+      setter = "#{attribute}=".to_sym
+      getter = "#{attribute}_from_html".to_sym
+
+      value = send(getter)
+      if value.present?
+        self.send(setter, value)
+      end
+    end
+
+    property.save! if changed?
+  end
+
   def download
     Rails.logger.info("Trying to find id_number #{id_number}")
 
@@ -236,6 +235,8 @@ class Property < ActiveRecord::Base
     if table.present?
       self.property_table_html = table.to_html
       save!
+
+      populate_fields
     end
   end
 end
