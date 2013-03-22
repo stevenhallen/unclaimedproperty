@@ -220,7 +220,7 @@ class Property < ActiveRecord::Base
       end
     end
 
-    property.save! if changed?
+    save! if changed?
   end
 
   def download
