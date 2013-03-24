@@ -157,6 +157,10 @@ class Property < ActiveRecord::Base
       element.content.strip
     end.select(&:present?)
   end
+  
+  def first_name_from_owner_names
+    #todo
+  end
 
   def owners
     element_by_id_content(property_table, '#OwnersNameData').split(';').collect do |name|
@@ -166,6 +170,29 @@ class Property < ActiveRecord::Base
 
   def owner_names_from_html
     owners.join('; ')
+  end
+  
+  def city_state_zip
+    owner_address_lines.split("\n").last.strip if owner_address_lines.present?
+  end
+  
+  def postal_code_from_address_lines
+    return if city_state_zip.blank?
+    postal_code = city_state_zip.gsub(/\d+/).first
+  end
+  
+  def state_from_address_lines
+    address_city_state = city_state_zip.split(postal_code_from_address_lines).first.strip
+    address_city_state.last(2)
+    #TODO: Check with array of known states
+  end
+  
+  def city_from_address_lines
+    city_state_zip[0..city_state_zip.length-9].strip
+  end
+  
+  def street_address_from_address_lines
+    owner_address_lines.split("\n").first.strip if owner_address_lines.present?
   end
 
   def reported_owner_address_lines
@@ -200,6 +227,25 @@ class Property < ActiveRecord::Base
 
   def reported_by_from_html
     element_by_id_content(property_table, '#ReportedByData')
+  end
+
+  def populate_address_fields
+    %w(
+      street_address
+      city
+      state
+      postal_code
+    ).each do |attribute|
+      setter = "#{attribute}=".to_sym
+      getter = "#{attribute}_from_address_lines".to_sym
+
+      value = send(getter)
+      if value.present?
+        self.send(setter, value)
+      end
+    end
+
+    save! if changed?
   end
 
   def populate_fields
