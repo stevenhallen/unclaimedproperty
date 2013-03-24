@@ -181,9 +181,18 @@ class Property < ActiveRecord::Base
     postal_code = city_state_zip.gsub(/\d+/).first
   end
   
+  def city_state
+    postal_split_string = " " + postal_code_from_address_lines
+    city_state_zip.split(postal_split_string).first.strip
+  end
+  
+  def city
+    city_split_string = " " + state_from_address_lines + " "
+    (city_state + " ").split(city_split_string).first.strip
+  end
+  
   def state_from_address_lines
-    address_city_state = city_state_zip.split(postal_code_from_address_lines).first.strip
-    address_city_state.last(2)
+    city_state.last(2)
     #TODO: Check with array of known states
   end
   
