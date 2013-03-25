@@ -1,4 +1,6 @@
 require 'csv'
+require 'people_places_things'
+include PeoplePlacesThings
 
 class Property < ActiveRecord::Base
   def self.with_id_number
@@ -157,10 +159,6 @@ class Property < ActiveRecord::Base
       element.content.strip
     end.select(&:present?)
   end
-  
-  def first_name_from_owner_names
-    #todo
-  end
 
   def owners
     element_by_id_content(property_table, '#OwnersNameData').split(';').collect do |name|
@@ -186,7 +184,7 @@ class Property < ActiveRecord::Base
     city_state_zip.split(postal_split_string).first.strip
   end
   
-  def city
+  def city_from_address_lines
     city_split_string = " " + state_from_address_lines + " "
     (city_state + " ").split(city_split_string).first.strip
   end
@@ -194,10 +192,6 @@ class Property < ActiveRecord::Base
   def state_from_address_lines
     city_state.last(2)
     #TODO: Check with array of known states
-  end
-  
-  def city_from_address_lines
-    city_state_zip[0..city_state_zip.length-9].strip
   end
   
   def street_address_from_address_lines
@@ -236,6 +230,14 @@ class Property < ActiveRecord::Base
 
   def reported_by_from_html
     element_by_id_content(property_table, '#ReportedByData')
+  end
+  
+  def populate_name_fields
+    name = PersonName.new(owner_names.split("; ").first, :last_first_middle)
+    self.first_name = name.first
+    self.middle_name = name.middle
+    self.last_name = name.last
+    save! if changed?
   end
 
   def populate_address_fields

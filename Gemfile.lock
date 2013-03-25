@@ -121,6 +121,7 @@ GEM
     multi_json (1.6.1)
     multi_xml (0.5.3)
     nokogiri (1.5.6)
+    people_places_things (2.5.2)
     pg (0.14.1)
     polyglot (0.3.3)
     posix-spawn (0.3.6)
@@ -233,6 +234,7 @@ DEPENDENCIES
   jbuilder (~> 1.0.1)
   jquery-rails
   nokogiri
+  people_places_things
   pg
   rails (= 4.0.0.beta1)
   rspec-rails
