@@ -1,1 +1,36 @@
-%h1 Welcome to unclaimedproperty
+%section.container.landing
+  .row
+    .span12.form
+      = form_tag "#", html: { class: "form-search" } do
+        = text_field_tag "query", "", class: "input-big", placeholder: "Name, City (optional)"
+        = submit_tag "Search Property", class: "btn btn-primary btn-large"
+
+        %p.ie
+          ie: Philip C, San Francisco
+
+  .row
+    .span12.results
+      %h2 Results for <em>"Philip C"</em>
+
+      %table.table
+        %thead
+          %tr
+            %td Name
+            %td Address
+            %td City
+            %td Zip
+            %td Date Reported
+            %td Date Contacted
+        %tbody
+          - 5.times do
+            %tr
+              %td Philip Crawford
+              %td 1316 Rutledge St
+              %td Madison
+              %td 53703
+              %td 12-17-2012
+              %td 12-20-2012
+
+      = link_to "View all results", "#", class: "view-all"
+
+

@@ -1,4 +1,6 @@
 require 'csv'
+require 'people_places_things'
+include PeoplePlacesThings
 
 class Property < ActiveRecord::Base
   def self.with_id_number
@@ -167,6 +169,34 @@ class Property < ActiveRecord::Base
   def owner_names_from_html
     owners.join('; ')
   end
+  
+  def city_state_zip
+    owner_address_lines.split("\n").last.strip if owner_address_lines.present?
+  end
+  
+  def postal_code_from_address_lines
+    return if city_state_zip.blank?
+    postal_code = city_state_zip.gsub(/\d+/).first
+  end
+  
+  def city_state
+    postal_split_string = " " + postal_code_from_address_lines
+    city_state_zip.split(postal_split_string).first.strip
+  end
+  
+  def city_from_address_lines
+    city_split_string = " " + state_from_address_lines + " "
+    (city_state + " ").split(city_split_string).first.strip
+  end
+  
+  def state_from_address_lines
+    city_state.last(2)
+    #TODO: Check with array of known states
+  end
+  
+  def street_address_from_address_lines
+    owner_address_lines.split("\n").first.strip if owner_address_lines.present?
+  end
 
   def reported_owner_address_lines
     element_by_id_children_content(property_table, '#ReportedAddressData')
@@ -201,6 +231,33 @@ class Property < ActiveRecord::Base
   def reported_by_from_html
     element_by_id_content(property_table, '#ReportedByData')
   end
+  
+  def populate_name_fields
+    name = PersonName.new(owner_names.split("; ").first, :last_first_middle)
+    self.first_name = name.first
+    self.middle_name = name.middle
+    self.last_name = name.last
+    save! if changed?
+  end
+
+  def populate_address_fields
+    %w(
+      street_address
+      city
+      state
+      postal_code
+    ).each do |attribute|
+      setter = "#{attribute}=".to_sym
+      getter = "#{attribute}_from_address_lines".to_sym
+
+      value = send(getter)
+      if value.present?
+        self.send(setter, value)
+      end
+    end
+
+    save! if changed?
+  end
 
   def populate_fields
     %w(
@@ -220,7 +277,7 @@ class Property < ActiveRecord::Base
       end
     end
 
-    property.save! if changed?
+    save! if changed?
   end
 
   def download

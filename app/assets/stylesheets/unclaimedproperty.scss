@@ -1,0 +1,126 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+@import url(http://fonts.googleapis.com/css?family=Denk+One);
+
+$sansFontFamily: 'Open Sans', Helvetica, Arial;
+@import "bootstrap";
+@import "bootstrap-responsive";
+
+$blue: #049cdb;
+
+body {
+  padding-top: 30px;
+  border-top: 3px solid $blue;
+  background: #efefef;
+  background-image: asset-url('bg.png', image);
+}
+
+.navbar {
+  .brand {
+    font-family: 'Denk One', sans-serif;
+    color: #555;
+    text-shadow: 0 1px 0 #ffffff;
+    display: block;
+    float: left;
+    font: {
+      weight: 300;
+      size: 28px;
+    }
+    strong {
+      font-weight: 600;
+    }
+    &:hover {
+      color: darken($blue, 25%);
+      text-decoration: none;
+    }
+  }
+
+  ul.nav {
+    float: right;
+    margin:{
+      top: 9px;
+    }
+    a {
+      padding: 4px 15px;
+    }
+    a.active {
+      background: $blue;
+      color: #FAFAFA;
+      &:hover {
+        @extend .active;
+      }
+    }
+  }
+}
+
+section.landing {
+  background: {
+    image: asset-url('home-bg.jpg', image);
+    position: center;
+  }
+  margin-top: 40px;
+  height: 670px;
+
+  .search-section {
+    text-align: center;
+    padding-top: 30px;
+    h1 {
+      font-size: 33px;
+      color: darken($blue, 20%);
+    }
+    h2 {
+      font-size: 25px;
+    }
+  }
+
+  .form {
+    text-align: center;
+    margin-top: 50px;
+
+    .input-big{
+      width: 35%;
+      height: 32px;
+      position: relative;
+      top: 5px;
+    }
+
+    .ie {
+      color: #f9f9f9;
+      font-weight: 500;
+    }
+  }
+
+  .results {
+    margin-top: 40px;
+    text-align: center;
+    h2 {
+      background: #333;
+      opacity: 0.8;
+      color: #FAFAFA;
+      padding: 10px;
+    }
+
+    table {
+      width: auto;
+      margin: 0 auto;
+      color: #333;
+      thead tr td {
+        background: $blue;
+        font-weight: bold;
+      }
+      tbody tr td {
+        background: #999;
+        color: #000;
+      }
+      tbody tr:nth-child(odd) td {
+        background: #888;
+      }
+    }
+    .view-all {
+      background: #FFF;
+      padding: 5px 14px;
+      font-weight: 500;
+      position: relative;
+      top: 15px;
+    }
+  }
+}

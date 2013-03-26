@@ -15,11 +15,13 @@ gem 'nokogiri'
 gem 'pg'
 gem 'tilt', '1.3.4'
 gem 'turbolinks'
+gem 'people_places_things'
 
 group :assets do
   gem 'coffee-rails', '~> 4.0.0.beta1'
   gem 'sass-rails', '~> 4.0.0.beta1'
   gem 'uglifier', '>= 1.0.3'
+  gem 'bootstrap-sass'
 end
 
 group :development do
