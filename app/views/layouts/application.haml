@@ -1,0 +1,23 @@
+!!! 5
+%html
+  %head
+    %title Unclaimed Property
+    %meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    = stylesheet_link_tag    "application", :media => "all"
+    = javascript_include_tag "application"
+
+  %body
+    .container
+      %header.navbar
+        %a.brand{href: "#"}
+          <strong>Unclaimed</strong>Property
+
+        %ul.nav
+          %li
+            = link_to "Home", "#", class: "active"
+          %li
+            = link_to "About", "#"
+          %li
+            = link_to "Contact", "#"
+
+    = yield
