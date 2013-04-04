@@ -3,7 +3,15 @@ require 'people_places_things'
 
 include PeoplePlacesThings
 
-class Property < ActiveRecord::Base
+class Notice < ActiveRecord::Base
+  def self.without_id_number
+    where(:id_number => nil)
+  end
+
+  def self.with_id_number
+    where('id_number is not null')
+  end
+
   def self.not_downloaded
     where(:downloaded_at => nil)
   end
@@ -13,90 +21,57 @@ class Property < ActiveRecord::Base
   end
 
   def self.not_found
-    downloaded.where(:property_table_html => nil)
+    downloaded.where(:notice_table_html => nil)
   end
 
   def self.found
-    downloaded.where('property_table_html is not null')
+    downloaded.where('notice_table_html is not null')
   end
 
-  def self.csv_column_names
-    %w(id_number owner_names reported_owner_address property_type cash_report reported_by property_url)
+  def self.max_found_rec_id
+    found.maximum(:rec_id)
   end
 
-  def self.write_csv(filename)
-    File.open(filename, 'w') do |writer|
-      writer.write(to_csv)
-    end
+  def self.count_of_records_not_found_after_max_found_rec_id
+    not_found.where('rec_id > ?', max_found_rec_id).count
   end
 
-  def self.to_csv
-    CSV.generate do |csv|
-      csv << csv_column_names
-      found.find_in_batches(:batch_size => 1000) do |batches|
-        batches.each do |property|
-          csv << csv_column_names.collect { |name| property.send(name.to_sym) }
-        end
-      end
-    end
+  def self.starting_rec_id
+    1
   end
 
-  def self.max_cash_report
-    found.maximum(:cash_report)
-  end
+  def self.next_rec_id
+    max_found = max_found_rec_id
 
-  def self.max_found_id_number
-    found.maximum(:id_number) || 0
-  end
-
-  def self.count_of_records_not_found_after_max_found_id_number
-    not_found.where('id_number > ?', max_found_id_number).count
-  end
-
-  def self.starting_id_number
-    970000000
-  end
-
-  def self.next_id_number
-    max_found = max_found_id_number
-
-    max_found.nil? ? starting_id_number : max_found + 1
+    max_found.nil? ? starting_rec_id : max_found + 1
   end
 
   def self.queue_download_for_next_batch(number=50)
-    return if count_of_records_not_found_after_max_found_id_number > 10
+    return if count_of_records_not_found_after_max_found_rec_id > 10
 
-    next_id_number.upto(next_id_number + number).each do |id_number|
-      record = where(:id_number => id_number).first || new(:id_number => id_number)
+    next_rec_id.upto(next_rec_id + number).each do |rec_id|
+      record = where(:rec_id => rec_id).first || new(:rec_id => rec_id)
 
       record.save unless record.persisted?
 
-      record.delay.download unless property.property_table_html.present?
+      record.delay.download unless record.notice_table_html.present?
     end
   end
 
-  def self.found_by_id_number?(id_number)
-    url = "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{id_number}"
-
-    response = UrlUtils.response_for_url(url)
-
-    response.present? && !response.include?('NO MATCH') && response.include?('Property_Details_Main_Page_Content_Formatting_Table')
-  end
-
-  def property_id_number
-    "%09d" % id_number
+  def notice_url
+    "http://scoweb.sco.ca.gov/UCP/NoticeDetails.aspx?propertyRecID=#{rec_id}"
   end
 
   def property_url
-    "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property_id_number}"
+    "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyRecID=#{rec_id}"
   end
 
-  def property_table
-    @property_table ||= Nokogiri::HTML(property_table_html)
+  def notice_table
+    @notice_table ||= Nokogiri::HTML(notice_table_html)
   end
 
   def html_table
-    property_table
+    notice_table
   end
 
   def owners
@@ -159,7 +134,7 @@ class Property < ActiveRecord::Base
 
   def cash_report_from_html
     begin
-      from_html = UrlUtils.element_by_id_content(html_table, '#ctl00_ContentPlaceHolder1_CashReportData')
+      from_html = UrlUtils.element_by_id_content(html_table, '#AmountData')
       BigDecimal(from_html.split("\n").first.sub('$', ''))
     rescue
       Rails.logger.error("Error finding cash report for #{id}")
@@ -167,9 +142,42 @@ class Property < ActiveRecord::Base
     end
   end
 
+  def reported_on_from_html
+    begin
+      Chronic.parse(UrlUtils.element_by_id_content(html_table, '#DateReportedData')).to_date
+    rescue
+      Rails.logger.error("Error finding reported on for #{id}")
+      nil
+    end
+  end
+
   def reported_by_from_html
     UrlUtils.element_by_id_content(html_table, '#ReportedByData')
   end
+
+  def property_table
+    @property_table ||= UrlUtils.get_table(property_url, '#Property_Details_Main_Page_Content_Formatting_Table')
+  end
+
+  def id_number_from_html
+    return nil unless property_table.present?
+
+    lines = UrlUtils.element_by_id_content(property_table, '#tbl_HeaderInformation') || ''
+
+    lines = lines.split("\n").collect(&:strip).select(&:present?)
+
+    return nil unless lines.present?
+
+    index = lines.index { |line| line.starts_with? 'Property ID Number:' }
+
+    lines[index + 1].to_i
+  end
+
+  # TODO:
+  # - Business Contact Information (holder name and address)
+  # - Shares Reported
+  # - Name of Security Reported
+  # - Date of Last Contact
 
   def populate_name_fields
     name = PersonName.new(owner_names.split("; ").first, :last_first_middle)
@@ -201,6 +209,8 @@ class Property < ActiveRecord::Base
   def populate_fields
     %w(
       cash_report
+      id_number
+      reported_on
       owner_address_lines
       owner_names
       property_reported
@@ -220,16 +230,16 @@ class Property < ActiveRecord::Base
   end
 
   def download
-    Rails.logger.info("Trying to find id_number #{id_number}")
+    Rails.logger.info("Trying to find rec_id #{rec_id}")
 
-    return if property_table_html.present?
+    return if notice_table_html.present?
 
     self.downloaded_at = Time.now
     save!
 
-    table = UrlUtils.get_table(property_url, '#Property_Details_Main_Page_Content_Formatting_Table')
+    table = UrlUtils.get_table(notice_url, '#Notice_Details_Main_Page_Content_Formatting_Table')
     if table.present?
-      self.property_table_html = table.to_html
+      self.notice_table_html = table.to_html
       save!
 
       populate_fields
