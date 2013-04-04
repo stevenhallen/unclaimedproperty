@@ -11,7 +11,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130322213439) do
+ActiveRecord::Schema.define(version: 20130403234204) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "delayed_jobs", force: true do |t|
     t.integer  "priority",   default: 0
@@ -29,8 +32,31 @@ ActiveRecord::Schema.define(version: 20130322213439) do
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
-  create_table "properties", force: true do |t|
+  create_table "notices", force: true do |t|
+    t.integer  "rec_id",              null: false
     t.integer  "id_number"
+    t.text     "notice_table_html"
+    t.datetime "downloaded_at"
+    t.datetime "reported_on"
+    t.decimal  "cash_report"
+    t.string   "owner_names"
+    t.string   "owner_address_lines"
+    t.string   "property_type"
+    t.string   "property_reported"
+    t.string   "reported_by"
+    t.string   "first_name"
+    t.string   "middle_name"
+    t.string   "last_name"
+    t.string   "street_address"
+    t.string   "city"
+    t.string   "state"
+    t.string   "postal_code"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "properties", force: true do |t|
+    t.integer  "id_number",                                    null: false
     t.text     "property_table_html"
     t.datetime "downloaded_at"
     t.datetime "created_at"
