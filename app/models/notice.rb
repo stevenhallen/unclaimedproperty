@@ -46,6 +46,14 @@ class Notice < ActiveRecord::Base
     max_found.nil? ? starting_rec_id : max_found + 1
   end
 
+  def self.retry_not_found
+    Notice.not_found.find_in_batches(:batch_size => 1000).each do |notices|
+      notices.each do |notice|
+        notice.delay.download
+      end
+    end
+  end
+
   def self.queue_download_for_next_batch(number=50)
     return if count_of_records_not_found_after_max_found_rec_id > 10
 
