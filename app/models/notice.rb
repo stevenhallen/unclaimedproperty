@@ -47,7 +47,7 @@ class Notice < ActiveRecord::Base
   end
 
   def self.retry_not_found
-    Notice.not_found.find_in_batches(:batch_size => 1000).each do |notices|
+    Notice.not_found.find_in_batches(:batch_size => 1000) do |notices|
       notices.each do |notice|
         notice.delay.download
       end
