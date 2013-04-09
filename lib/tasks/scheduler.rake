@@ -5,5 +5,5 @@ end
 
 desc 'Property: Queue next batch'
 task :property_queue_next_batch => :environment do
-  Property.queue_download_for_next_batch
+  Property.delay.queue_download_for_next_batch
 end
