@@ -49,8 +49,12 @@ class Property < ActiveRecord::Base
     found.maximum(:id_number) || 0
   end
 
+  def self.not_found_after_max_found_id_number
+    not_found.where('id_number > ?', max_found_id_number)
+  end
+
   def self.count_of_records_not_found_after_max_found_id_number
-    not_found.where('id_number > ?', max_found_id_number).count
+    not_found_after_max_found_id_number.count
   end
 
   def self.starting_id_number
@@ -61,6 +65,21 @@ class Property < ActiveRecord::Base
     max_found = max_found_id_number
 
     max_found.nil? ? starting_id_number : max_found + 1
+  end
+
+  def self.starting_id_number_of_retry
+    # 2013-04-08 08:13:06 PM
+    # not_found_after_max_found_id_number.minimum(:id_number)
+
+    970976639
+  end
+
+  def self.retry_not_found
+    not_found.where('id_number >= ?', starting_id_number_of_retry).find_in_batches(:batch_size => 1000) do |properties|
+      properties.each do |property|
+        property.delay.download
+      end
+    end
   end
 
   def self.queue_download_for_next_batch(number=50)
