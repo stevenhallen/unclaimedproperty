@@ -1,22 +1,23 @@
 !!! 5
 %html
   %head
-    %title Unclaimed Property
+    %title Unclaimed Property Notifier
     %meta(name="viewport" content="width=device-width, initial-scale=1.0")
     = stylesheet_link_tag    "application", :media => "all"
     = javascript_include_tag "application"
   %body
+    .navbar.navbar-inverse.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.brand{href: "#"}
+            Unclaimed Property Notifier
+
+          %ul.nav
+            %li
+              = link_to "Home", "#", class: "active"
+            %li
+              = link_to "About", "#"
+            %li
+              = link_to "Contact", "#"
     .container
-      %header.navbar
-        %a.brand{href: "#"}
-          California Unclaimed Property Notifier
-
-        %ul.nav
-          %li
-            = link_to "Home", "#", class: "active"
-          %li
-            = link_to "About", "#"
-          %li
-            = link_to "Contact", "#"
-
-    = yield
+      = yield

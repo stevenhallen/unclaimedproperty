@@ -1,33 +1,26 @@
-%section.container.landing
-  .row
-    .span12.form
-      = form_tag "#", class: "form-inline" do
-        = text_field_tag "last", "", class: "input-small", placeholder: "Last Name"
-        = text_field_tag "first", "", class: "input-small", placeholder: "First (optional)"
-        = text_field_tag "city", "", class: "input-small", placeholder: "City (optional)"
-      
-        = submit_tag "Search Property", class: "btn btn-primary"
 
-  .row
-    .span12.results
-      %h2 Results for <em>"Philip Crawford"</em>
+.hero-unit
+  %h1 We value your time
+  %br
+  %h3
+    Forget about continually checking the 
+    #{link_to "California unclaimed property search", "http://sco.ca.gov/upd.html"}.
+  %p We will do that for you.  
 
-      %table.table
-        %thead
-          %tr
-            %td First
-            %td Last
-            %td Address
-            %td City
-            %td Value
-        %tbody
-          - 5.times do
-            %tr
-              %td Philip 
-              %td Crawford
-              %td 1316 Rutledge St
-              %td Madison
-              %td $20.00
-
-
-
+.row
+  .span6
+    %h2 Latest Unclaimed Property
+    %table.table
+      - @properties.each do |property|
+        %tr
+          %td
+            = link_to "#{property.first_name} #{property.middle_name} #{property.last_name}", "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property.id_number}"
+          %td
+            #{property.city}, #{property.state}
+            
+          %td
+            = number_to_currency(property.cash_report)
+            
+  .span6
+    %h2 Receive Notifications
+    %p Put form here
