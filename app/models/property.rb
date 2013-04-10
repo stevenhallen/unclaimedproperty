@@ -20,6 +20,10 @@ class Property < ActiveRecord::Base
     downloaded.where('property_table_html is not null')
   end
 
+  def self.most_recent(limit=50)
+    found.order('downloaded_at desc').limit(limit)
+  end
+
   def self.csv_column_names
     %w(id_number owner_names reported_owner_address property_type cash_report reported_by property_url)
   end
