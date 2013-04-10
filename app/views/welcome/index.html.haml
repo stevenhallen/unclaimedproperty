@@ -7,4 +7,20 @@
     #{link_to "California unclaimed property search", "http://sco.ca.gov/upd.html"}.
   %p We will do that for you.  
 
-
+.row
+  .span6
+    %h2 Latest Unclaimed Property
+    %table.table
+      - @properties.each do |property|
+        %tr
+          %td
+            = link_to "#{property.first_name} #{property.middle_name} #{property.last_name}", "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property.id_number}"
+          %td
+            #{property.city}, #{property.state}
+            
+          %td
+            = number_to_currency(property.cash_report)
+            
+  .span6
+    %h2 Receive Notifications
+    %p Put form here
