@@ -221,6 +221,14 @@ class Property < ActiveRecord::Base
     save! if changed?
   end
 
+  def self.populate_all
+    found.find_in_batches(:batch_size => 1000) do |properties|
+      properties.each do |property|
+        property.delay.populate_all
+      end
+    end
+  end
+
   def populate_address_fields
     %w(
       street_address
