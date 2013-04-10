@@ -213,9 +213,11 @@ class Property < ActiveRecord::Base
 
   def populate_name_fields
     name = PersonName.new(owner_names.split("; ").first, :last_first_middle)
+
     self.first_name = name.first
     self.middle_name = name.middle
     self.last_name = name.last
+
     save! if changed?
   end
 
@@ -259,6 +261,12 @@ class Property < ActiveRecord::Base
     save! if changed?
   end
 
+  def populate_all
+    populate_fields
+    populate_name_fields
+    populate_address_fields
+  end
+
   def download
     Rails.logger.info("Trying to find id_number #{id_number}")
 
@@ -272,7 +280,7 @@ class Property < ActiveRecord::Base
       self.property_table_html = table.to_html
       save!
 
-      populate_fields
+      populate_all
     end
   end
 end
