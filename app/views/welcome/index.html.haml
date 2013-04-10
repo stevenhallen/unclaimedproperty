@@ -1,33 +1,10 @@
-%section.container.landing
-  .row
-    .span12.form
-      = form_tag "#", class: "form-inline" do
-        = text_field_tag "last", "", class: "input-small", placeholder: "Last Name"
-        = text_field_tag "first", "", class: "input-small", placeholder: "First (optional)"
-        = text_field_tag "city", "", class: "input-small", placeholder: "City (optional)"
-      
-        = submit_tag "Search Property", class: "btn btn-primary"
 
-  .row
-    .span12.results
-      %h2 Results for <em>"Philip Crawford"</em>
-
-      %table.table
-        %thead
-          %tr
-            %td First
-            %td Last
-            %td Address
-            %td City
-            %td Value
-        %tbody
-          - 5.times do
-            %tr
-              %td Philip 
-              %td Crawford
-              %td 1316 Rutledge St
-              %td Madison
-              %td $20.00
-
+.hero-unit
+  %h1 We value your time
+  %br
+  %h3
+    Forget about continually checking the 
+    #{link_to "California unclaimed property search", "http://sco.ca.gov/upd.html"}.
+  %p We will do that for you.  
 
 
