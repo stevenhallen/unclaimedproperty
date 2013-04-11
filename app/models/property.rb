@@ -111,7 +111,7 @@ class Property < ActiveRecord::Base
 
       record.save unless record.persisted?
 
-      record.delay.download unless property.property_table_html.present?
+      record.delay.download unless record.property_table_html.present?
     end
   end
 
