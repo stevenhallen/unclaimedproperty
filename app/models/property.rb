@@ -149,14 +149,24 @@ class Property < ActiveRecord::Base
     owners.join('; ')
   end
 
-  CITY_STATE_ZIP_PATTERN = /^(?<city>.*?) (?<state>[A-Z]{2}) (?<postal_code>.*?)\-(?<other>.*?)$/
+  CITY_STATE_ZIP_PATTERNS = [
+    /^(?<city>.*?) (?<state>[A-Z]{2}) (?<postal_code>\d{5}$)(?<other>.*?)$/,
+    /^(?<city>.*?) (?<state>[A-Z]{2}) (?<postal_code>.*?)\-(?<other>.*?)$/,
+    /^(?<city>.*?) (?<state>[A-Z]{2})(?<postal_code>.*?)(?<other>.*?)$/
+  ]
 
   def city_state_zip_line
     owner_address_lines.split("\n").last.strip if owner_address_lines.present?
   end
 
   def city_state_zip
-    CITY_STATE_ZIP_PATTERN.match(city_state_zip_line) || {}
+    matches = CITY_STATE_ZIP_PATTERNS.collect do |pattern|
+      pattern.match(city_state_zip_line)
+    end
+
+    matches.select!(&:present?)
+
+    matches.first || {}
   end
 
   def postal_code_from_address_lines
