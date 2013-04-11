@@ -3,6 +3,8 @@ require 'spec_helper'
 describe Property do
   let(:property) { build :property }
 
+  before { property.populate_all }
+
   describe '#owner_names' do
     it { property.owner_names.should eql 'HOBBS BILL C' }
   end
@@ -16,7 +18,7 @@ describe Property do
   end
 
   describe '#cash_report' do
-    it { property.cash_report.should eql '$32.94' }
+    it { property.cash_report.should eql 32.94 }
   end
 
   describe '#reported_by' do
