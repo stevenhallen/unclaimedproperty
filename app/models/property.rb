@@ -20,6 +20,10 @@ class Property < ActiveRecord::Base
     downloaded.where('property_table_html is not null')
   end
 
+  def self.with_address
+    found.where('owner_address_lines is not null and owner_address_lines <> ?', '-')
+  end
+
   def self.most_recent(limit=50)
     found.order('downloaded_at desc').limit(limit)
   end
