@@ -20,6 +20,10 @@ class Property < ActiveRecord::Base
     downloaded.where('property_table_html is not null')
   end
 
+  def self.with_address
+    found.where('owner_address_lines is not null and owner_address_lines <> ?', '-')
+  end
+
   def self.most_recent(limit=50)
     found.order('downloaded_at desc').limit(limit)
   end
@@ -229,8 +233,18 @@ class Property < ActiveRecord::Base
     save! if changed?
   end
 
-  def self.populate_all
-    found.find_in_batches(:batch_size => 1000) do |properties|
+  def self.populate_all_in_batches
+    batch_size = 100000
+    (found.minimum(:id)..found.maximum(:id)).step(batch_size) do |starting_id|
+      ending_id = starting_id + batch_size - 1
+
+      Property.delay.populate_all(starting_id, ending_id)
+    end
+  end
+
+  def self.populate_all(starting_id, ending_id)
+    batch = found.where('id between ? and ?', starting_id, ending_id)
+    batch.find_in_batches(:batch_size => 1000) do |properties|
       properties.each do |property|
         property.delay.populate_all
       end
