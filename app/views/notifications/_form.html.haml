@@ -1,0 +1,6 @@
+= simple_form_for @notification do |f|
+  = f.input :first_name, :label => 'foo', :placeholder => 'first name', label: false
+  = f.input :middle_name, :placeholder => 'middle initial (optional)', label: false
+  = f.input :last_name, :placeholder => 'last name', label: false
+  = f.input :email, :placeholder => 'email address', label: false
+  = f.submit "Sign me up for notifications", :class => 'btn'
