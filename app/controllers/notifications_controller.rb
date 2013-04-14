@@ -8,7 +8,7 @@ class NotificationsController < ApplicationController
     @notification = Notification.new(notification_params)
 
     if @notification.save
-      redirect_to root_path, :notice => 'Saved'
+      redirect_to root_path, :notice => 'We have sent you a confirmation email.'
     else
       redirect_to root_path, :alert => 'Not saved'
     end
