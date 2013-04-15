@@ -14,7 +14,7 @@
       - @properties.each do |property|
         %tr
           %td
-            = link_to "#{property.first_name} #{property.middle_name} #{property.last_name}", "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property.id_number}"
+            = link_to "#{property.first_name} #{property.middle_name} #{property.last_name}", property_path(property)
           %td
             #{property.city}, #{property.state}
             
