@@ -252,6 +252,7 @@ class Property < ActiveRecord::Base
   end
 
   def populate_address_fields
+    self.update_attribute(:address_processed, true)
     %w(
       street_address
       city
@@ -268,6 +269,7 @@ class Property < ActiveRecord::Base
     end
 
     save! if changed?
+
   end
 
   def populate_fields
