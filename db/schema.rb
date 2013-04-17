@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20130411154120) do
+ActiveRecord::Schema.define(version: 20130417151118) do
 
   create_table "delayed_jobs", force: true do |t|
     t.integer  "priority",   default: 0
@@ -63,7 +63,7 @@ ActiveRecord::Schema.define(version: 20130411154120) do
   end
 
   create_table "properties", force: true do |t|
-    t.integer  "id_number",                                    null: false
+    t.integer  "id_number",                                                    null: false
     t.text     "property_table_html"
     t.datetime "downloaded_at"
     t.datetime "created_at"
@@ -81,6 +81,7 @@ ActiveRecord::Schema.define(version: 20130411154120) do
     t.string   "city"
     t.string   "state"
     t.string   "postal_code"
+    t.boolean  "address_processed",                            default: false
   end
 
   add_index "properties", ["id_number"], name: "index_properties_on_id_number", unique: true
