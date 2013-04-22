@@ -21,7 +21,19 @@ class Property < ActiveRecord::Base
   end
 
   def self.with_address
-    found.where('owner_address_lines is not null and owner_address_lines <> ?', '-')
+    found.where('owner_address_lines is not null and owner_address_lines not in (?)', ['-', 'UNKNOWN'])
+  end
+
+  def self.without_address
+    found.where('owner_address_lines is null or owner_address_lines in (?)', ['-', 'UNKNOWN'])
+  end
+
+  def self.address_processed
+    found.where(:address_processed => true)
+  end
+
+  def self.not_address_processed
+    found.where(:address_processed => false)
   end
 
   def self.most_recent(limit=50)
