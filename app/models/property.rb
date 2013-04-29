@@ -114,12 +114,23 @@ class Property < ActiveRecord::Base
     # => 970989698
     # > Property.count_of_records_not_found_after_max_found_id_number
     # => 23670
+    #
+    # 2013-04-24 06:45:20 AM
+    #
+    # > Property.not_found_after_max_found_id_number.minimum(:id_number)
+    # => 971005261
+    # > Property.count_of_records_not_found_after_max_found_id_number
+    # => 8107
 
     [STARTING_ID_NUMBER_OF_RETRY, not_found.where('created_at < ?', retry_window).maximum(:id_number) || 0].max
   end
 
+  def self.not_found_to_retry
+    not_found.where('id_number >= ? and updated_at < ?', starting_id_number_of_retry, 1.day.ago)
+  end
+
   def self.retry_not_found
-    not_found.where('id_number >= ?', starting_id_number_of_retry).find_in_batches(:batch_size => 1000) do |properties|
+    not_found_to_retry.find_in_batches(:batch_size => 1000) do |properties|
       properties.each do |property|
         property.delay.download
       end
