@@ -121,6 +121,20 @@ class Property < ActiveRecord::Base
     # => 971005261
     # > Property.count_of_records_not_found_after_max_found_id_number
     # => 8107
+    #
+    # 2013-04-30 08:37:00 AM
+    #
+    # > Property.not_found_after_max_found_id_number.minimum(:id_number)
+    # => 971007722
+    # > Property.count_of_records_not_found_after_max_found_id_number
+    # => 5646
+    #
+    # 2013-05-15 12:12:04 PM
+    #
+    # > Property.not_found_after_max_found_id_number.minimum(:id_number)
+    # => 971012412
+    # > Property.count_of_records_not_found_after_max_found_id_number
+    # => 956
 
     [STARTING_ID_NUMBER_OF_RETRY, not_found.where('created_at < ?', retry_window).maximum(:id_number) || 0].max
   end
