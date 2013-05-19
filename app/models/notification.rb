@@ -7,4 +7,12 @@ class Notification < ActiveRecord::Base
   validates :email,
               :presence => true,
               :uniqueness => true
+              
+  after_create :send_welcome
+
+private
+
+  def send_welcome
+    NotificationMailer.welcome_email(self).deliver
+  end
 end
