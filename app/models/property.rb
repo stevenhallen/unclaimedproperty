@@ -167,9 +167,9 @@ class Property < ActiveRecord::Base
   end
 
   def self.found_by_id_number?(id_number)
-    url = "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{id_number}"
+    property = Property.new(id_number: id_number)
 
-    response = UrlUtils.response_for_url(url)
+    response = UrlUtils.response_for_url(property.property_url)
 
     response.present? && !response.include?('NO MATCH') && response.include?('Property_Details_Main_Page_Content_Formatting_Table')
   end
@@ -179,7 +179,7 @@ class Property < ActiveRecord::Base
   end
 
   def property_url
-    "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property_id_number}"
+    "https://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{property_id_number}"
   end
 
   def property_table

@@ -25,14 +25,14 @@
     Property Type
   .span4
     = @property.property_type
-    
+
 .row
   .span2
     Property ID
   .span4
     = @property.id_number
-    
+
 
 %h4
-  More details on the 
-  = link_to "California Unclaimed Property web site (#{@property.id_number})", "http://scoweb.sco.ca.gov/UCP/PropertyDetails.aspx?propertyID=#{@property.id_number}"
+  More details on the
+  = link_to "California Unclaimed Property web site (#{@property.id_number})", property.property_url
