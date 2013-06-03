@@ -1,19 +1,19 @@
-%h1 
+%h1
   #{@property.first_name} #{@property.middle_name} #{@property.last_name}
-  
+
 .row
   .span2
     Property Value
   .span4
     = number_to_currency(@property.cash_report)
-    
+
 .row
   .span2
     Address
   .span4
     #{@property.street_address}, #{@property.city} #{@property.state}
- 
-- if @property.property_reported.present?   
+
+- if @property.property_reported.present?
   .row
     .span2
       Reported By
