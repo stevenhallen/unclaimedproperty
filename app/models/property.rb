@@ -121,8 +121,22 @@ class Property < ActiveRecord::Base
     # => 971005261
     # > Property.count_of_records_not_found_after_max_found_id_number
     # => 8107
+    #
+    # 2013-04-30 08:37:00 AM
+    #
+    # > Property.not_found_after_max_found_id_number.minimum(:id_number)
+    # => 971007722
+    # > Property.count_of_records_not_found_after_max_found_id_number
+    # => 5646
+    #
+    # 2013-05-15 12:12:04 PM
+    #
+    # > Property.not_found_after_max_found_id_number.minimum(:id_number)
+    # => 971012412
+    # > Property.count_of_records_not_found_after_max_found_id_number
+    # => 956
 
-    [STARTING_ID_NUMBER_OF_RETRY, not_found.where('created_at < ?', retry_window).maximum(:id_number) || 0].max
+    [STARTING_ID_NUMBER_OF_RETRY, not_found.where('created_at < ?', retry_window).minimum(:id_number) || 0].max
   end
 
   def self.not_found_to_retry
@@ -137,10 +151,13 @@ class Property < ActiveRecord::Base
     end
   end
 
-  def self.queue_download_for_next_batch(number=500)
-    return if count_of_records_not_found_after_max_found_id_number > 100
+  def self.queue_download_for_next_batch(options={})
+    batch_size = options.fetch(:batch_size, 1000)
+    not_found_threshold = options.fetch(:not_found_threshold, 1000)
 
-    next_id_number.upto(next_id_number + number).each do |id_number|
+    return if count_of_records_not_found_after_max_found_id_number > not_found_threshold
+
+    next_id_number.upto(next_id_number + batch_size).each do |id_number|
       record = where(:id_number => id_number).first || new(:id_number => id_number)
 
       record.save unless record.persisted?
