@@ -1,0 +1,3 @@
+%form{:action => "/lookup_name", :class => "form-search"}
+  %input{:name => "name", :type => :text, :class => "input search-query", :placeholder => "last name", :value => params[:name]}
+  = submit_tag("Search Property Records", options = {:class => "btn home"})

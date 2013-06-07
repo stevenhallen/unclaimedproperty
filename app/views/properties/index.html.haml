@@ -1,0 +1,34 @@
+%h1 Properties matching your search
+
+= render :partial => 'shared/name_search'
+
+%table#properties.table.table-bordered.tablesorter
+  %thead
+    %tr
+      %th
+        First Name
+      %th
+        Middle
+      %th
+        Last Name
+      %th
+        Address
+      %th
+        City
+      %th
+        Zip
+      %th
+        Amount
+      %th
+        Link
+  %tbody
+    - @properties.each do |property|
+      %tr
+        %td= property.first_name
+        %td= property.middle_name
+        %td= property.last_name
+        %td= property.street_address
+        %td= property.city
+        %td= property.postal_code
+        %td= number_to_currency(property.cash_report)
+        %td= link_to property.id_number, property_path(property)

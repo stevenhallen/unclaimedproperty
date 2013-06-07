@@ -4,6 +4,8 @@ require 'people_places_things'
 include PeoplePlacesThings
 
 class Property < ActiveRecord::Base
+  
+  
   def self.not_downloaded
     where(:downloaded_at => nil)
   end

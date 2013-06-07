@@ -14,3 +14,12 @@
 //= require jquery_ujs
 //= require turbolinks
 //= require_tree .
+
+$(function() {
+  $('.tablesorter').tablesorter({
+    sortList: [[2, 0], [0, 0]],
+    widgets: ['filter']
+  });
+});
+
+
