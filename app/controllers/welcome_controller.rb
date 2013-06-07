@@ -1,6 +1,7 @@
 class WelcomeController < ApplicationController
   def index
-    @properties = Property.most_recent(20).where('cash_report > 10')
+    limit = Rails.env == "production" ? 200 : 10
+    @properties = Property.most_recent(20).where("cash_report > #{limit}")
     @notification = Notification.new
   end
 
