@@ -1,38 +1,40 @@
 %h1
   #{@property.first_name} #{@property.middle_name} #{@property.last_name}
 
-.row
-  .span2
-    Property Value
-  .span4
-    = number_to_currency(@property.cash_report)
+.left{:style => 'display:inline-block; width:450px'}
+  %table.table.table-bordered
+    %tr
+      %td
+        Property Value
+      %td
+        = number_to_currency(@property.cash_report)
+    %tr
+      %td
+        Address
+      %td
+        #{@property.street_address}, #{@property.city} #{@property.state}
 
-.row
-  .span2
-    Address
-  .span4
-    #{@property.street_address}, #{@property.city} #{@property.state}
+    - if @property.property_reported.present?
+      %tr
+        %td
+          Reported By
+        %td
+          = @property.property_reported
 
-- if @property.property_reported.present?
-  .row
-    .span2
-      Reported By
-    .span4
-      = @property.property_reported
+    %tr
+      %td
+        Property Type
+      %td
+        = @property.property_type
 
-.row
-  .span2
-    Property Type
-  .span4
-    = @property.property_type
-
-.row
-  .span2
-    Property ID
-  .span4
-    = @property.id_number
-
-
-%h4
-  More details on the
-  = link_to "California Unclaimed Property web site (#{@property.id_number})", @property.property_url
+    %tr
+      %td
+        Property ID
+      %td
+        = @property.id_number
+  %b
+    More details on the
+    = link_to "California Unclaimed Property web site", @property.property_url
+  
+.right{:style => 'display:inline-block; width:450px; padding-left:100px'}
+  = render :partial => 'notifications/form'

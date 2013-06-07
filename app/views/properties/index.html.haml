@@ -1,5 +1,7 @@
 %h1 Properties matching your search
 
+= render :partial => 'shared/name_search'
+
 %table#properties.table.table-bordered.tablesorter
   %thead
     %tr
@@ -16,6 +18,8 @@
       %th
         Zip
       %th
+        Amount
+      %th
         Link
   %tbody
     - @properties.each do |property|
@@ -26,4 +30,5 @@
         %td= property.street_address
         %td= property.city
         %td= property.postal_code
-        %td= link_to property.id_number, property.property_url
+        %td= number_to_currency(property.cash_report)
+        %td= link_to property.id_number, property_path(property)
