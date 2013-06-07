@@ -1,12 +1,29 @@
 %h1 Properties matching your search
 
-%table.table.table-bordered
-  - @properties.each do |property|
+%table#properties.table.table-bordered.tablesorter
+  %thead
     %tr
-      %td= property.first_name
-      %td= property.middle_name
-      %td= property.last_name
-      %td= property.street_address
-      %td= property.city
-      %td= property.postal_code
-      %td= link_to property.id_number, property.property_url
+      %th
+        First Name
+      %th
+        Middle
+      %th
+        Last Name
+      %th
+        Address
+      %th
+        City
+      %th
+        Zip
+      %th
+        Link
+  %tbody
+    - @properties.each do |property|
+      %tr
+        %td= property.first_name
+        %td= property.middle_name
+        %td= property.last_name
+        %td= property.street_address
+        %td= property.city
+        %td= property.postal_code
+        %td= link_to property.id_number, property.property_url
