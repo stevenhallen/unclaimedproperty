@@ -19,8 +19,6 @@
         Zip
       %th
         Amount
-      %th
-        Link
   %tbody
     - @properties.each do |property|
       %tr
@@ -30,5 +28,4 @@
         %td= property.street_address
         %td= property.city
         %td= property.postal_code
-        %td= number_to_currency(property.cash_report)
-        %td= link_to property.id_number, property_path(property)
+        %td= link_to number_to_currency(property.cash_report), property_path(property)
