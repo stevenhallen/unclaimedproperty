@@ -145,7 +145,7 @@ class Property < ActiveRecord::Base
     not_found.where('id_number >= ? and updated_at < ?', starting_id_number_of_retry, 1.day.ago)
   end
 
-  def self.retry_not_found
+  def self.backfil_records
     not_found_to_retry.find_in_batches(:batch_size => 1000) do |properties|
       properties.each do |property|
         property.delay.download
@@ -160,6 +160,21 @@ class Property < ActiveRecord::Base
     return if count_of_records_not_found_after_max_found_id_number > not_found_threshold
 
     next_id_number.upto(next_id_number + batch_size).each do |id_number|
+      record = where(:id_number => id_number).first || new(:id_number => id_number)
+
+      record.save unless record.persisted?
+
+      record.delay.download unless record.property_table_html.present?
+    end
+  end
+  
+  START_HERE = 951000000
+  END_HERE =   951000003
+
+  def self.backfill_records(options={})
+    batch_size = options.fetch(:batch_size, 1000)
+    
+    START_HERE.upto(END_HERE).each do |id_number|
       record = where(:id_number => id_number).first || new(:id_number => id_number)
 
       record.save unless record.persisted?
