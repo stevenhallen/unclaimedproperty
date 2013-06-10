@@ -169,7 +169,7 @@ class Property < ActiveRecord::Base
   end
   
   START_HERE = 951000000
-  END_HERE =   951000003
+  END_HERE =   970000000
 
   def self.backfill_records(options={})
     batch_size = options.fetch(:batch_size, 1000)
